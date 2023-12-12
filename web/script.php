@@ -1,5 +1,6 @@
 <?php
 
+use App\Client\Client;
 use App\TelegramLogger\Logger;
 
 require 'vendor/autoload.php';
@@ -51,7 +52,7 @@ try {
         ]
     ];
 
-    $result = request(json_encode($data));
+    $result = Client::request(json_encode($data));
     Logger::sendTelegramMessage('повідомлення з KEYCRM: ' . $result);
 } catch (Exception $e) {
     Logger::sendTelegramMessage('повідомлення з SCRIPT: ERROR ' . $e->getMessage());
@@ -75,22 +76,3 @@ function itemProducts(array $items): array
     ];
 }
 
-function request($dataString)
-{
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, "https://openapi.keycrm.app/v1/order");
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "Content-type: application/json",
-            "Accept: application/json",
-            "Cache-Control: no-cache",
-            "Pragma: no-cache",
-            'Authorization:  Bearer ' . $_ENV['API_KEYCRM_TOKEN'])
-    );
-    $result = curl_exec($ch);
-    $orderUUID = json_decode($result, true)['source_uuid'];
-    curl_close($ch);
-    return $orderUUID;
-}
